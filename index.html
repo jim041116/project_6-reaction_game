@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考反應遊戲</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body>
+    <div class="text">
+        <h1>考反應遊戲!</h1>
+        <p>點擊畫面上隨機出現圖案，測試你的反應速度，共可點擊五次，結束後會顯示最佳成績</p>
+        <p>反應時間： <span id="time">0</span>秒</p>
+        <button>開 始 !</button>
+    </div>
+    <div id="box"></div>
+
+    <script>
+        let button = document.querySelector('button');
+        let box = document.querySelector('#box');
+        let title = document.querySelector('h1');
+        let paragraph = document.querySelector('p');
+        let time = document.getElementById('time');
+        let click = 0;
+        let arry = [];
+
+        let get_fullHeight = (block) => {
+            // offsetHeight可取得包含padding及border的高度
+            let height = block.offsetHeight;
+            // 取得指定元素的css值
+            let style = window.getComputedStyle(block);
+            height += parseInt(style.marginTop) + parseInt(style.marginBottom);
+            return height;
+        }
+
+        // 隨機取得box顏色及外觀
+        let get_randomRange = (min, max) => {
+            let difference = max - min;
+            let rand = Math.random();
+            rand = Math.floor(rand * difference) + 1 + min;
+            return rand;
+        }
+
+        let myBox = {
+            display: 'none',
+            // box顯示
+            makeBox: () => {
+                // 透過亂數取得box顯示時間
+                let time = Math.random();
+                time = Math.floor(time * 2000) + 1
+
+                // 延遲函式作用時間
+                setTimeout(() => {
+                    if (Math.random() > 0.5) {
+                        box.style.borderRadius = '75px';
+                    } else {
+                        box.style.borderRadius = '0px';
+                    }
+
+                    // 呼叫上方的函式並帶入參數
+                    let color = get_randomRange(50, 255);
+                    let boxColor = 'rgba(255, ' + color + ', 0, 1.0)';
+
+                    box.style.backgroundColor = boxColor;
+
+                    box.style.display = "block";
+
+                    // 取得各標籤高度
+                    let box_size = get_fullHeight(box);
+                    let h1_size = get_fullHeight(title);
+                    let p_size = get_fullHeight(paragraph);
+                    let remain_height = box_size + h1_size + p_size;
+                    // window視窗高度 - remain_height 就是box可隨機移動高度
+                    let top = Math.floor(Math.random() * (window.innerHeight - remain_height) + 1)
+                    let left = Math.floor(Math.random() * (window.innerWidth - box_size) + 1)
+
+                    // 並將top數字+字串px做使用
+                    box.style.top = top + "px";
+                    // 並將left數字+字串px做使用
+                    box.style.left = left + "px";
+
+                    // box出現時間
+                    timer.boxTime = Date.now()
+
+                }, time)
+            }
+        }
+
+        let timer = {
+            clickTime: 0,
+            boxTime: 0,
+            reactionTime: 0
+        }
+
+        button.onclick = () => {
+            myBox.makeBox();
+            timer.boxTime = Date.now();
+        };
+
+        // 點擊box事件
+        box.onclick = () => {
+            box.style.display = myBox.display;
+            timer.clickTime = Date.now();
+            timer.reactionTime = (timer.clickTime - timer.boxTime) / 1000;
+            time.innerHTML = timer.reactionTime;
+            myBox.makeBox();
+            click++;
+            arry.push(timer.reactionTime);
+
+            if(click == 5){
+                let min = Math.min(...arry);
+            alert(`
+            遊戲結束
+
+            第一次:${arry[0]}
+            第二次:${arry[1]}
+            第三次:${arry[2]}
+            第四次:${arry[3]}
+            第五次:${arry[4]}
+
+            最佳成績為${min}秒`,location.reload());
+        }
+        };
+
+    </script>
+</body>
+
+</html>
